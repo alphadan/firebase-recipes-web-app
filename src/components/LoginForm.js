@@ -1,25 +1,40 @@
 import { useState } from "react";
 import FirebaseAuthService from "../FirebaseAuthService";
+import { auth } from "../FirebaseConfig";
 
 function LoginForm({ existingUser }) {
-  const [username, setUsername] = useState("");
+  const [email, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
-    console.log("username", username);
-    console.log("password", password);
     try {
-      await FirebaseAuthService.registerUser(username, password);
-      setUsername("");
-      setPassword("");
+      const userCredential = await FirebaseAuthService.loginUser(
+        auth,
+        email,
+        password
+      );
     } catch (error) {
       alert(error.message);
     }
   }
 
   function handleLogout() {
-    FirebaseAuthService.logoutUser();
+    FirebaseAuthService.logoutUser(auth);
+  }
+
+  async function handleSendResetPasswordEmail() {
+    if (!email) {
+      alert("Missing username");
+      return;
+    }
+
+    try {
+      const sendEmailResponse = await FirebaseAuthService.sendEmail(auth, email);
+      alert("Sent the password resest email");
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   return (
@@ -30,7 +45,7 @@ function LoginForm({ existingUser }) {
           <button
             type="button"
             className="primary-button"
-            onClick="{handleLogout}"
+            onClick={handleLogout}
           >
             Logout
           </button>
@@ -42,7 +57,7 @@ function LoginForm({ existingUser }) {
             <input
               type="email"
               required
-              value={username}
+              value={email}
               onChange={(e) => setUsername(e.target.value)}
               className="input-text"
             />
@@ -58,7 +73,14 @@ function LoginForm({ existingUser }) {
             />
           </label>
           <div className="button-box">
-            <button className="primary-button">Submit</button>
+            <button className="primary-button">Login</button>
+            <button
+              type="button"
+              onClick={handleSendResetPasswordEmail}
+              className="primary-button"
+            >
+              Reset Password
+            </button>
           </div>
         </form>
       )}

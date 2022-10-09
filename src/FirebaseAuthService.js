@@ -1,32 +1,49 @@
-import firebase from "./FirebaseConfig";
-// console.log("[FirebaseAuthService]apiKey", firebase.config.apiKey);
-const auth = firebase.auth();
-console.log("auth", auth);
+import { auth } from "./FirebaseConfig";
 
-const registerUser = (email, password) => {
-  return auth.createUserWithEmailAndPassword(email, password);
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+} from "firebase/auth";
+
+const registerUser = async (auth, email, password) => {
+  const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  return userCredential;
 };
 
-const loginUser = (email, password) => {
-  return auth.signInWithEmailAndPassword(email, password);
+const loginUser = async (auth, email, password) => {
+  const userCredential = await signInWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  return userCredential;
 };
 
-const logoutUser = () => {
-  return auth.signOut;
+const logoutUser = (auth) => {
+  signOut(auth);
 };
 
-const sendPasswordResetEmail = (email) => {
-  return auth.sendPasswordResetEmail(email);
+const sendEmail = (email) => {
+  sendPasswordResetEmail(auth, email);
 };
 
 const loginWithGoogle = () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
 
-  return auth.signInWithPopup(provider);
+  return signInWithPopup(provider);
 };
 
 const subscribeToAuthChanges = (handleAuthChange) => {
-  auth.onAuthStateChanged((user) => {
+  onAuthStateChanged(auth, (user) => {
     handleAuthChange(user);
   });
 };
@@ -35,7 +52,7 @@ const FirebaseAuthService = {
   registerUser,
   loginUser,
   logoutUser,
-  sendPasswordResetEmail,
+  sendEmail,
   loginWithGoogle,
   subscribeToAuthChanges,
 };
